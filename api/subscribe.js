@@ -27,14 +27,19 @@ module.exports = async function handler(req, res) {
   }
 
   const email = (body && body.email ? String(body.email) : '').trim();
+  const website = (body && body.website ? String(body.website) : '').trim();
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ success: false, message: 'invalid_email' });
   }
 
+  if (!website || website.length > 100 || !/^[a-zA-Z0-9._-]+$/.test(website)) {
+    return res.status(400).json({ success: false, message: 'invalid_website' });
+  }
+
   try {
     const sql = neon(process.env.DATABASE_URL);
-    await sql`INSERT INTO newsletter_subscribers (email, website) VALUES (${email}, 'lufly')`;
+    await sql`INSERT INTO newsletter_subscribers (email, website) VALUES (${email}, ${website})`;
     return res.status(200).json({ success: true, message: 'subscribed' });
   } catch (err) {
     if (err && err.code === '23505') {
